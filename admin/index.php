@@ -29,6 +29,7 @@ page_header('Admin Dashboard', '../');
     <article class="dashboard-card">
         <h2>Reports</h2>
         <p>Generate popular-content and creator-content reports.</p>
+        <a href="popular_report.php">Popular Reviews Report</a>
     </article>
 </section>
 

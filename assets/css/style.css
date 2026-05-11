@@ -159,6 +159,12 @@ a:focus {
     max-width: 780px;
 }
 
+.report-form {
+    align-items: end;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 920px;
+}
+
 .form-field {
     display: grid;
     gap: 8px;
@@ -542,6 +548,10 @@ tr:last-child td {
     }
 
     .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .report-form {
         grid-template-columns: 1fr;
     }
 
