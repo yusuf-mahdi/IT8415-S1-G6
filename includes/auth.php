@@ -60,6 +60,41 @@ function is_logged_in(): bool
     return current_user() !== null;
 }
 
+function has_role(string|array $roles): bool
+{
+    $user = current_user();
+
+    if ($user === null) {
+        return false;
+    }
+
+    $allowedRoles = is_array($roles) ? $roles : [$roles];
+
+    return in_array($user['role'], $allowedRoles, true);
+}
+
+function require_login(string $loginPath = 'login.php'): void
+{
+    if (is_logged_in()) {
+        return;
+    }
+
+    header('Location: ' . $loginPath);
+    exit;
+}
+
+function require_role(string|array $roles, string $loginPath = 'login.php', string $fallbackPath = 'index.php'): void
+{
+    require_login($loginPath);
+
+    if (has_role($roles)) {
+        return;
+    }
+
+    header('Location: ' . $fallbackPath);
+    exit;
+}
+
 function redirect_after_login(string $role): void
 {
     if ($role === 'admin') {

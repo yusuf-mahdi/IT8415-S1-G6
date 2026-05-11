@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/auth.php';
 
-function page_header(string $title): void
+function page_header(string $title, string $basePath = ''): void
 {
     $currentUser = current_user();
     $safeTitle = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
@@ -15,25 +15,25 @@ function page_header(string $title): void
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title><?= $safeTitle ?> | Book Review Platform</title>
-        <link rel="stylesheet" href="assets/css/style.css">
+        <link rel="stylesheet" href="<?= e($basePath) ?>assets/css/style.css">
     </head>
     <body>
         <header class="site-header">
-            <a class="brand" href="index.php">Book Review Platform</a>
+            <a class="brand" href="<?= e($basePath) ?>index.php">Book Review Platform</a>
             <nav class="site-nav" aria-label="Primary navigation">
-                <a href="index.php">Home</a>
-                <a href="search.php">Search</a>
+                <a href="<?= e($basePath) ?>index.php">Home</a>
+                <a href="<?= e($basePath) ?>search.php">Search</a>
                 <?php if ($currentUser !== null): ?>
                     <?php if ($currentUser['role'] === 'admin'): ?>
-                        <a href="admin/index.php">Admin</a>
+                        <a href="<?= e($basePath) ?>admin/index.php">Admin</a>
                     <?php elseif ($currentUser['role'] === 'creator'): ?>
-                        <a href="creator/index.php">Creator</a>
+                        <a href="<?= e($basePath) ?>creator/index.php">Creator</a>
                     <?php endif; ?>
                     <span class="nav-user"><?= e($currentUser['username']) ?></span>
-                    <a href="logout.php">Logout</a>
+                    <a href="<?= e($basePath) ?>logout.php">Logout</a>
                 <?php else: ?>
-                    <a href="login.php">Login</a>
-                    <a href="signup.php">Sign Up</a>
+                    <a href="<?= e($basePath) ?>login.php">Login</a>
+                    <a href="<?= e($basePath) ?>signup.php">Sign Up</a>
                 <?php endif; ?>
             </nav>
         </header>

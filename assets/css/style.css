@@ -209,6 +209,29 @@ a:focus {
     background: var(--accent-dark);
 }
 
+.dashboard-grid {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.dashboard-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.dashboard-card h2 {
+    font-size: 1.15rem;
+    margin: 0 0 8px;
+}
+
+.dashboard-card p {
+    color: var(--muted);
+    margin: 0;
+}
+
 .empty-state {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -326,5 +349,9 @@ a:focus {
     .review-card-placeholder {
         aspect-ratio: 16 / 9;
         min-height: 0;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
     }
 }
