@@ -1,3 +1,8 @@
 WORK_DISTRIBUTION_PLAN.md
 MAHA_TASK_BREAKDOWN.md
-MAHA_TASK_BREAKDOWN.md
+uploads/covers/*
+uploads/downloads/*
+uploads/media/*
+!uploads/covers/.gitkeep
+!uploads/downloads/.gitkeep
+!uploads/media/.gitkeep

@@ -62,6 +62,7 @@ page_header('Creator Dashboard', '../');
     <article class="dashboard-card">
         <h2>Add Review</h2>
         <p>Create a new draft with images, media, and optional downloadable files.</p>
+        <a href="create.php">Add Review</a>
     </article>
     <article class="dashboard-card">
         <h2>Publish</h2>
@@ -77,6 +78,7 @@ page_header('Creator Dashboard', '../');
     <section class="empty-state">
         <h2>No reviews yet</h2>
         <p>Your drafts and published reviews will appear here after you create them.</p>
+        <a class="button-link empty-action" href="create.php">Add Review</a>
     </section>
 <?php else: ?>
     <section class="table-panel" aria-labelledby="creator-reviews-title">
