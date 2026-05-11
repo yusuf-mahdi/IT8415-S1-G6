@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':role' => $form['role'],
             ]);
 
-            $successMessage = 'Account created successfully. You can log in when the login page is added.';
+            $successMessage = 'Account created successfully. You can log in now.';
             $form = [
                 'username' => '',
                 'email' => '',
