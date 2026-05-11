@@ -2,7 +2,74 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/layout.php';
+
+$reviews = [];
+$categories = [];
+$loadError = '';
+
+try {
+    $categories = db()
+        ->query('SELECT category_id, category_name FROM dbProj_categories ORDER BY category_name')
+        ->fetchAll();
+
+    $stmt = db()->query(
+        "SELECT
+            r.review_id,
+            r.review_title,
+            r.review_content,
+            r.cover_image AS review_cover,
+            r.view_count,
+            r.created_at,
+            b.title AS book_title,
+            b.author AS book_author,
+            b.cover_image AS book_cover,
+            c.category_name,
+            u.username AS creator_name,
+            ROUND(AVG(rt.rating), 1) AS average_rating,
+            COUNT(rt.rating_id) AS rating_count
+        FROM dbProj_reviews r
+        INNER JOIN dbProj_books b ON r.book_id = b.book_id
+        LEFT JOIN dbProj_categories c ON b.category_id = c.category_id
+        INNER JOIN dbProj_users u ON r.user_id = u.user_id
+        LEFT JOIN dbProj_ratings rt ON r.review_id = rt.review_id
+        WHERE r.status = 'published'
+        GROUP BY
+            r.review_id,
+            r.review_title,
+            r.review_content,
+            r.cover_image,
+            r.view_count,
+            r.created_at,
+            b.title,
+            b.author,
+            b.cover_image,
+            c.category_name,
+            u.username
+        ORDER BY r.created_at DESC"
+    );
+
+    $reviews = $stmt->fetchAll();
+} catch (PDOException $exception) {
+    $loadError = 'Reviews could not be loaded. Check the database connection and import database.sql.';
+}
+
+function short_text(string $text, int $limit = 160): string
+{
+    $cleanText = trim(strip_tags($text));
+
+    if (strlen($cleanText) <= $limit) {
+        return $cleanText;
+    }
+
+    return rtrim(substr($cleanText, 0, $limit), " \t\n\r\0\x0B.,") . '...';
+}
+
+function review_cover(array $review): string
+{
+    return (string) ($review['review_cover'] ?: $review['book_cover'] ?: '');
+}
 
 page_header('Home');
 ?>
@@ -12,10 +79,63 @@ page_header('Home');
     <p>Browse recent book reviews, ratings, and creator recommendations.</p>
 </section>
 
-<section class="empty-state">
-    <h2>Application setup started</h2>
-    <p>The next Maha task will connect this page to the published reviews in MySQL.</p>
-</section>
+<?php if ($categories !== []): ?>
+    <nav class="category-nav" aria-label="Book categories">
+        <?php foreach ($categories as $category): ?>
+            <a href="search.php?category=<?= e((string) $category['category_id']) ?>">
+                <?= e($category['category_name']) ?>
+            </a>
+        <?php endforeach; ?>
+    </nav>
+<?php endif; ?>
+
+<?php if ($loadError !== ''): ?>
+    <section class="notice notice-error">
+        <p><?= e($loadError) ?></p>
+    </section>
+<?php elseif ($reviews === []): ?>
+    <section class="empty-state">
+        <h2>No published reviews yet</h2>
+        <p>Published creator reviews will appear here in newest-first order.</p>
+    </section>
+<?php else: ?>
+    <section class="review-grid" aria-label="Latest published reviews">
+        <?php foreach ($reviews as $review): ?>
+            <?php $cover = review_cover($review); ?>
+            <article class="review-card">
+                <?php if ($cover !== ''): ?>
+                    <img class="review-card-image" src="<?= e($cover) ?>" alt="<?= e($review['book_title']) ?> cover">
+                <?php else: ?>
+                    <div class="review-card-image review-card-placeholder" aria-hidden="true">
+                        <span><?= e(substr((string) $review['book_title'], 0, 1)) ?></span>
+                    </div>
+                <?php endif; ?>
+
+                <div class="review-card-body">
+                    <div class="review-card-meta">
+                        <span><?= e($review['category_name'] ?? 'Uncategorized') ?></span>
+                        <span><?= e(date('M j, Y', strtotime((string) $review['created_at']))) ?></span>
+                    </div>
+
+                    <h2><?= e($review['review_title']) ?></h2>
+                    <p class="book-line"><?= e($review['book_title']) ?> by <?= e($review['book_author']) ?></p>
+                    <p><?= e(short_text((string) $review['review_content'])) ?></p>
+
+                    <div class="review-card-stats">
+                        <span>By <?= e($review['creator_name']) ?></span>
+                        <span>
+                            <?= e($review['average_rating'] !== null ? (string) $review['average_rating'] : 'No') ?>
+                            rating<?= (int) $review['rating_count'] === 1 ? '' : 's' ?>
+                        </span>
+                        <span><?= e((string) $review['view_count']) ?> views</span>
+                    </div>
+
+                    <a class="button-link" href="review.php?id=<?= e((string) $review['review_id']) ?>">View More</a>
+                </div>
+            </article>
+        <?php endforeach; ?>
+    </section>
+<?php endif; ?>
 
 <?php
 page_footer();
