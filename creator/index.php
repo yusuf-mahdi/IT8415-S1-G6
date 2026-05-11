@@ -11,6 +11,7 @@ require_role('creator', '../login.php', '../index.php');
 $user = current_user();
 $reviews = [];
 $loadError = '';
+$draftCount = 0;
 
 try {
     $stmt = db()->prepare(
@@ -42,6 +43,7 @@ try {
     );
     $stmt->execute([':user_id' => $user['id']]);
     $reviews = $stmt->fetchAll();
+    $draftCount = count(array_filter($reviews, static fn (array $review): bool => $review['status'] === 'draft'));
 } catch (PDOException $exception) {
     $loadError = 'Your reviews could not be loaded. Check the database connection.';
 }
@@ -66,7 +68,7 @@ page_header('Creator Dashboard', '../');
     </article>
     <article class="dashboard-card">
         <h2>Publish</h2>
-        <p>Review draft content before publishing it for viewers.</p>
+        <p><?= $draftCount ?> draft<?= $draftCount === 1 ? '' : 's' ?> ready for review.</p>
     </article>
 </section>
 

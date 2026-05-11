@@ -322,6 +322,23 @@ tr:last-child td {
     gap: 10px;
 }
 
+.confirm-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    max-width: 760px;
+    padding: 24px;
+}
+
+.confirm-panel h2 {
+    font-size: 1.35rem;
+    margin: 0 0 8px;
+}
+
+.confirm-panel p {
+    margin: 0 0 12px;
+}
+
 .empty-state {
     background: var(--surface);
     border: 1px solid var(--border);
