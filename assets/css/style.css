@@ -339,6 +339,85 @@ tr:last-child td {
     margin: 0 0 12px;
 }
 
+.review-detail {
+    display: grid;
+    gap: 20px;
+}
+
+.review-detail-header {
+    align-items: start;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: grid;
+    gap: 24px;
+    grid-template-columns: 1fr 220px;
+    padding: 24px;
+}
+
+.review-detail-header h1 {
+    font-size: 2rem;
+    margin: 0 0 8px;
+}
+
+.eyebrow {
+    color: var(--accent-dark);
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin: 0 0 8px;
+    text-transform: uppercase;
+}
+
+.review-detail-cover {
+    border-radius: 8px;
+    max-height: 320px;
+    object-fit: cover;
+    width: 100%;
+}
+
+.content-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-top: 20px;
+    padding: 24px;
+}
+
+.content-panel h2 {
+    font-size: 1.25rem;
+    margin: 0 0 12px;
+}
+
+.content-panel p {
+    margin: 0;
+}
+
+.content-panel audio,
+.content-panel video {
+    max-width: 100%;
+    width: 100%;
+}
+
+.comment-list {
+    display: grid;
+    gap: 14px;
+}
+
+.comment-item {
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+}
+
+.comment-item:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.comment-item h3 {
+    font-size: 1rem;
+    margin: 0 0 6px;
+}
+
 .empty-state {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -463,6 +542,10 @@ tr:last-child td {
     }
 
     .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .review-detail-header {
         grid-template-columns: 1fr;
     }
 }
