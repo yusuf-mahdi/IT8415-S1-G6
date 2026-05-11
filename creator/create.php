@@ -40,8 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Review title must be 200 characters or less.';
     }
 
-    if ($form['review_content'] === '') {
-        $errors[] = 'Review content is required.';
+    if (strlen($form['review_content']) < 30) {
+        $errors[] = 'Review content must be at least 30 characters.';
     }
 
     $coverPath = upload_file('cover_image', 'covers', ['image/jpeg', 'image/png', 'image/webp'], $errors);
@@ -148,7 +148,7 @@ page_header('Add Review', '../');
     </section>
 <?php endif; ?>
 
-<form class="form-panel form-panel-wide" method="post" action="create.php" enctype="multipart/form-data" novalidate>
+<form class="form-panel form-panel-wide" id="review-form" method="post" action="create.php" enctype="multipart/form-data" novalidate>
     <div class="form-field">
         <label for="book_id">Book</label>
         <select id="book_id" name="book_id" required>
@@ -175,7 +175,8 @@ page_header('Add Review', '../');
 
     <div class="form-field">
         <label for="review_content">Review content</label>
-        <textarea id="review_content" name="review_content" rows="9" required><?= e($form['review_content']) ?></textarea>
+        <textarea id="review_content" name="review_content" rows="9" minlength="30" required><?= e($form['review_content']) ?></textarea>
+        <p class="field-hint">Write at least 30 characters before saving.</p>
     </div>
 
     <div class="form-field">
@@ -201,6 +202,8 @@ page_header('Add Review', '../');
         <a href="index.php">Cancel</a>
     </div>
 </form>
+
+<script src="../assets/js/review-form-validation.js"></script>
 
 <?php
 page_footer();
