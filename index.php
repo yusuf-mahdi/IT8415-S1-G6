@@ -38,10 +38,21 @@ try {
     }
 
     if ($keyword !== '') {
+        // Prepend '+' to each word for "AND" logic in BOOLEAN MODE
+        $words = explode(' ', $keyword);
+        $formattedKeyword = '';
+        foreach ($words as $word) {
+            $trimmed = trim($word);
+            if ($trimmed !== '') {
+                $formattedKeyword .= '+' . $trimmed . '* ';
+            }
+        }
+        $formattedKeyword = trim($formattedKeyword);
+
         $whereClause .= " AND (MATCH(r.review_title, r.review_content) AGAINST(:keyword1 IN BOOLEAN MODE) 
                          OR MATCH(b.title, b.author, b.description) AGAINST(:keyword2 IN BOOLEAN MODE))";
-        $queryParams[':keyword1'] = $keyword;
-        $queryParams[':keyword2'] = $keyword;
+        $queryParams[':keyword1'] = $formattedKeyword;
+        $queryParams[':keyword2'] = $formattedKeyword;
     }
 
     if ($dateFrom !== '') {
