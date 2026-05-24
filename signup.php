@@ -85,12 +85,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':role' => $form['role'],
             ]);
 
-            $successMessage = 'Account created successfully. You can log in now.';
-            $form = [
-                'username' => '',
-                'email' => '',
-                'role' => 'viewer',
-            ];
+            header('Location: login.php?registered=1');
+            exit;
         } catch (PDOException $exception) {
             $errors[] = 'Account could not be created. Try again later.';
         }

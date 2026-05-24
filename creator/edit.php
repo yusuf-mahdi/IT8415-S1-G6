@@ -37,6 +37,11 @@ try {
         header('Location: index.php');
         exit;
     }
+
+    if ($review['status'] === 'published') {
+        header('Location: index.php?message=Published reviews cannot be edited.');
+        exit;
+    }
 } catch (PDOException $exception) {
     $errors[] = 'Data could not be loaded. Check the database connection.';
 }

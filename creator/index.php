@@ -74,7 +74,10 @@ page_header('Creator Dashboard', '../');
     </article>
     <article class="dashboard-card">
         <h2>Publish</h2>
-        <p><?= $draftCount ?> draft<?= $draftCount === 1 ? '' : 's' ?> ready for review.</p>
+        <p><?= $draftCount ?> draft<?= $draftCount === 1 ? '' : 's' ?> ready for publishing.</p>
+        <?php if ($draftCount > 0): ?>
+            <a href="#my-reviews" class="btn btn-secondary">View Drafts</a>
+        <?php endif; ?>
     </article>
 </section>
 
@@ -89,7 +92,7 @@ page_header('Creator Dashboard', '../');
         <a class="button-link empty-action" href="create.php">Add Review</a>
     </section>
 <?php else: ?>
-    <section class="table-panel" aria-labelledby="creator-reviews-title">
+    <section class="table-panel" id="my-reviews" aria-labelledby="creator-reviews-title">
         <div class="section-heading">
             <h2 id="creator-reviews-title">My Reviews</h2>
             <a class="button-link" href="create.php">Add Review</a>

@@ -68,7 +68,7 @@ if ($reviewId === false || $reviewId === null) {
         $review = $stmt->fetch();
 
         if ($review === false) {
-            $loadError = 'Published review was not found.';
+            $loadError = 'This review has been removed or is no longer available.';
             $review = null;
         } else {
             $currentUser = current_user();

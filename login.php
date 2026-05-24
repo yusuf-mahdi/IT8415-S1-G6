@@ -71,6 +71,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 page_header('Login');
 ?>
 
+<?php if (isset($_GET['registered'])): ?>
+    <section class="notice notice-success">
+        <p>Account created successfully! You can now log in.</p>
+    </section>
+<?php endif; ?>
+
 <section class="page-intro">
     <h1>Login</h1>
     <p>Access your creator, viewer, or admin account.</p>

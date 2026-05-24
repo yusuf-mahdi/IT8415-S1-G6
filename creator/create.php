@@ -11,21 +11,63 @@ require_role('creator', '../login.php', '../index.php');
 $user = current_user();
 $books = [];
 $errors = [];
+$bookSuccess = '';
 $form = [
     'book_id' => '',
     'review_title' => '',
     'review_content' => '',
 ];
 
+// Handle Add New Book (submitted via a separate form action)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_book') {
+    $newTitle      = trim((string) ($_POST['new_book_title']      ?? ''));
+    $newAuthor     = trim((string) ($_POST['new_book_author']     ?? ''));
+    $newCategoryId = trim((string) ($_POST['new_book_category']   ?? ''));
+    $newDesc       = trim((string) ($_POST['new_book_description'] ?? ''));
+
+    if ($newTitle === '') {
+        $errors[] = 'Book title is required.';
+    }
+    if ($newAuthor === '') {
+        $errors[] = 'Book author is required.';
+    }
+    if ($newCategoryId === '' || !ctype_digit($newCategoryId)) {
+        $errors[] = 'Select a valid category for the book.';
+    }
+
+    if ($errors === []) {
+        try {
+            $insertBook = db()->prepare(
+                'INSERT INTO dbProj_books (title, author, description, category_id, added_by)
+                 VALUES (:title, :author, :description, :category_id, :added_by)'
+            );
+            $insertBook->execute([
+                ':title'       => $newTitle,
+                ':author'      => $newAuthor,
+                ':description' => $newDesc,
+                ':category_id' => (int) $newCategoryId,
+                ':added_by'    => $user['id'],
+            ]);
+            $bookSuccess = 'Book "' . $newTitle . '" added successfully. You can now select it below.';
+        } catch (PDOException $e) {
+            $errors[] = 'Book could not be added. Try again.';
+        }
+    }
+}
+
 try {
     $books = db()
         ->query('SELECT book_id, title, author FROM dbProj_books ORDER BY title')
         ->fetchAll();
+    $categories = db()
+        ->query('SELECT category_id, category_name FROM dbProj_categories ORDER BY category_name')
+        ->fetchAll();
 } catch (PDOException $exception) {
     $errors[] = 'Books could not be loaded. Check the database connection.';
+    $categories = [];
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['action'])) {
     $form['book_id'] = trim((string) ($_POST['book_id'] ?? ''));
     $form['review_title'] = trim((string) ($_POST['review_title'] ?? ''));
     $form['review_content'] = trim((string) ($_POST['review_content'] ?? ''));
@@ -134,7 +176,7 @@ page_header('Add Review', '../');
 
 <section class="page-intro">
     <h1>Add Review Draft</h1>
-    <p>Create a draft review. Publishing will be handled in the next creator task.</p>
+    <p>Fill in the details below and save as a draft. You can publish it from your dashboard when ready.</p>
 </section>
 
 <?php if ($errors !== []): ?>
@@ -147,6 +189,44 @@ page_header('Add Review', '../');
         </ul>
     </section>
 <?php endif; ?>
+
+<?php if ($bookSuccess !== ''): ?>
+    <section class="notice notice-success"><p><?= e($bookSuccess) ?></p></section>
+<?php endif; ?>
+
+<!-- Add New Book Section -->
+<details class="form-panel form-panel-wide" style="margin-bottom:1.5rem;" <?= $bookSuccess !== '' ? 'open' : '' ?>>
+    <summary style="cursor:pointer; font-weight:700; font-size:1rem; padding:0.25rem 0;">
+        + Can't find your book? Add a new one
+    </summary>
+    <form method="post" action="create.php" style="margin-top:1.25rem; display:grid; gap:1rem;">
+        <input type="hidden" name="action" value="add_book">
+        <div class="form-field">
+            <label for="new_book_title">Book Title <span style="color:var(--danger-text)">*</span></label>
+            <input type="text" id="new_book_title" name="new_book_title" maxlength="200" required>
+        </div>
+        <div class="form-field">
+            <label for="new_book_author">Author <span style="color:var(--danger-text)">*</span></label>
+            <input type="text" id="new_book_author" name="new_book_author" maxlength="150" required>
+        </div>
+        <div class="form-field">
+            <label for="new_book_category">Category <span style="color:var(--danger-text)">*</span></label>
+            <select id="new_book_category" name="new_book_category" required>
+                <option value="">Select a category</option>
+                <?php foreach ($categories as $cat): ?>
+                    <option value="<?= e((string) $cat['category_id']) ?>"><?= e($cat['category_name']) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="form-field">
+            <label for="new_book_description">Description <span class="muted-text">(optional)</span></label>
+            <textarea id="new_book_description" name="new_book_description" rows="3"></textarea>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-secondary">Add Book</button>
+        </div>
+    </form>
+</details>
 
 <form class="form-panel form-panel-wide" id="review-form" method="post" action="create.php" enctype="multipart/form-data" novalidate>
     <div class="form-field">
