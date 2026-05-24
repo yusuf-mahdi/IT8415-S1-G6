@@ -22,7 +22,6 @@ function page_header(string $title, string $basePath = ''): void
             <a class="brand" href="<?= e($basePath) ?>index.php">Book Review Platform</a>
             <nav class="site-nav" aria-label="Primary navigation">
                 <a href="<?= e($basePath) ?>index.php">Home</a>
-                <a href="<?= e($basePath) ?>search.php">Search</a>
                 <?php if ($currentUser !== null): ?>
                     <?php if ($currentUser['role'] === 'admin'): ?>
                         <a href="<?= e($basePath) ?>admin/index.php">Admin</a>
