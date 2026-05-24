@@ -145,9 +145,9 @@ page_header('Search Reviews');
         <?php if (empty($reviews)): ?>
             <p>No reviews found matching your criteria.</p>
         <?php else: ?>
-            <div class="review-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+            <div class="search-results-grid">
                 <?php foreach ($reviews as $review): ?>
-                    <div class="review-card" style="border: 1px solid #ccc; border-radius: 8px; padding: 1rem; background: #fff;">
+                    <div class="search-result-card">
                         <?php if ($review['review_cover']): ?>
                             <img src="uploads/covers/<?= e($review['review_cover']) ?>" alt="Cover" style="max-width: 100%; height: auto; border-radius: 4px; margin-bottom: 1rem;">
                         <?php endif; ?>
@@ -156,14 +156,14 @@ page_header('Search Reviews');
                         </h3>
                         <p><strong>Book:</strong> <?= e($review['book_title']) ?> by <?= e($review['book_author']) ?></p>
                         <p><strong>By:</strong> <?= e($review['creator_name']) ?></p>
-                        <p>
+                        <p class="muted-text">
                             <strong>Rating:</strong> <?= $review['average_rating'] ? e((string)$review['average_rating']) . ' / 5' : 'No ratings yet' ?> <br>
                             <strong>Views:</strong> <?= (int)$review['view_count'] ?>
                         </p>
-                        <p style="font-size: 0.9em; color: #555;">
+                        <p style="font-size: 0.9em; color: #555; margin: 1rem 0;">
                             <?= e(substr($review['review_content'], 0, 100)) ?>...
                         </p>
-                        <a href="review.php?id=<?= (int)$review['review_id'] ?>" class="btn btn-secondary" style="display: inline-block; margin-top: 1rem;">Read More</a>
+                        <a href="review.php?id=<?= (int)$review['review_id'] ?>" class="btn btn-secondary" style="margin-top: auto;">Read More</a>
                     </div>
                 <?php endforeach; ?>
             </div>
