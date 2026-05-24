@@ -95,13 +95,14 @@ if ($reviewId === false || $reviewId === null) {
                             try {
                                 $rateStmt = db()->prepare(
                                     "INSERT INTO dbProj_ratings (review_id, user_id, rating) 
-                                     VALUES (:review_id, :user_id, :rating)
-                                     ON DUPLICATE KEY UPDATE rating = :rating"
+                                     VALUES (:review_id, :user_id, :rating1)
+                                     ON DUPLICATE KEY UPDATE rating = :rating2"
                                 );
                                 $rateStmt->execute([
                                     ':review_id' => $reviewId,
                                     ':user_id' => $currentUser['id'],
-                                    ':rating' => $ratingValue
+                                    ':rating1' => $ratingValue,
+                                    ':rating2' => $ratingValue
                                 ]);
                                 // Refresh user rating
                                 $userRating = $ratingValue;
