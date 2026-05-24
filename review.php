@@ -125,9 +125,27 @@ if ($reviewId === false || $reviewId === null) {
                                     ':user_id' => $currentUser['id'],
                                     ':comment_text' => $commentText
                                 ]);
+
+                                // Check if it's an AJAX request
+                                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+                                    header('Content-Type: application/json');
+                                    echo json_encode([
+                                        'status' => 'success',
+                                        'username' => $currentUser['username'],
+                                        'comment_text' => $commentText,
+                                        'created_at' => date('M j, Y')
+                                    ]);
+                                    exit;
+                                }
+
                                 header("Location: review.php?id=$reviewId&commented=1");
                                 exit;
                             } catch (PDOException $e) {
+                                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+                                    header('Content-Type: application/json');
+                                    echo json_encode(['status' => 'error', 'message' => 'Could not save comment.']);
+                                    exit;
+                                }
                                 $loadError = 'Could not save comment.';
                             }
                         }
@@ -276,6 +294,8 @@ page_header($review !== null ? (string) $review['review_title'] : 'Review');
         <?php endif; ?>
     </section>
 <?php endif; ?>
+
+<script src="assets/js/ajax-comments.js"></script>
 
 <?php
 page_footer();

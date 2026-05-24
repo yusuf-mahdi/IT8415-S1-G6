@@ -117,5 +117,7 @@ page_header('Login');
     </div>
 </form>
 
+<script src="assets/js/login-validation.js"></script>
+
 <?php
 page_footer();
