@@ -56,6 +56,12 @@ page_header('Creator Dashboard', '../');
     <p>Welcome, <?= e($user['username'] ?? 'creator') ?>. Manage your drafts and published reviews.</p>
 </section>
 
+<?php if (isset($_GET['message'])): ?>
+    <section class="notice notice-success">
+        <p><?= e($_GET['message']) ?></p>
+    </section>
+<?php endif; ?>
+
 <section class="dashboard-grid" aria-label="Creator actions">
     <article class="dashboard-card">
         <h2>My Reviews</h2>
