@@ -21,10 +21,17 @@ page_header('Admin Dashboard', '../');
     <article class="dashboard-card">
         <h2>Manage Users</h2>
         <p>Review viewer, creator, and administrator accounts.</p>
+        <a href="users.php" class="btn btn-secondary">Go to User Management</a>
     </article>
     <article class="dashboard-card">
         <h2>Manage Content</h2>
         <p>Review, remove, and monitor all published content.</p>
+        <a href="content.php" class="btn btn-secondary">Go to Content Management</a>
+    </article>
+    <article class="dashboard-card">
+        <h2>Manage Comments</h2>
+        <p>Monitor and remove inappropriate comments across all reviews.</p>
+        <a href="comments.php" class="btn btn-secondary">Go to Comment Management</a>
     </article>
     <article class="dashboard-card">
         <h2>Reports</h2>
