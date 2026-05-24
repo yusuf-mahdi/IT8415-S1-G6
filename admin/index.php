@@ -39,6 +39,7 @@ page_header('Admin Dashboard', '../');
         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
             <a href="popular_report.php" class="btn btn-secondary">Popular Reviews Report</a>
             <a href="user_report.php" class="btn btn-secondary">User Content Report</a>
+            <a href="activity_log.php" class="btn btn-secondary">System Activity Log (Triggers)</a>
         </div>
     </article>
 </section>
