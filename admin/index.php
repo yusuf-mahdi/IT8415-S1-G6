@@ -36,7 +36,10 @@ page_header('Admin Dashboard', '../');
     <article class="dashboard-card">
         <h2>Reports</h2>
         <p>Generate popular-content and creator-content reports.</p>
-        <a href="popular_report.php">Popular Reviews Report</a>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <a href="popular_report.php" class="btn btn-secondary">Popular Reviews Report</a>
+            <a href="user_report.php" class="btn btn-secondary">User Content Report</a>
+        </div>
     </article>
 </section>
 
