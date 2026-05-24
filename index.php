@@ -9,12 +9,23 @@ $reviews = [];
 $categories = [];
 $loadError = '';
 
+// Pagination settings
+$limit = 6;
+$page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1;
+if ($page < 1) $page = 1;
+$offset = ($page - 1) * $limit;
+
 try {
-    $categories = db()
+    $pdo = db();
+    $categories = $pdo
         ->query('SELECT category_id, category_name FROM dbProj_categories ORDER BY category_name')
         ->fetchAll();
 
-    $stmt = db()->query(
+    // Get total count for pagination
+    $totalReviews = $pdo->query("SELECT COUNT(*) FROM dbProj_reviews WHERE status = 'published'")->fetchColumn();
+    $totalPages = (int)ceil($totalReviews / $limit);
+
+    $stmt = $pdo->prepare(
         "SELECT
             r.review_id,
             r.review_title,
@@ -47,8 +58,12 @@ try {
             b.cover_image,
             c.category_name,
             u.username
-        ORDER BY r.created_at DESC"
+        ORDER BY r.created_at DESC
+        LIMIT :limit OFFSET :offset"
     );
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
 
     $reviews = $stmt->fetchAll();
 } catch (PDOException $exception) {
@@ -135,6 +150,20 @@ page_header('Home');
             </article>
         <?php endforeach; ?>
     </section>
+
+    <?php if ($totalPages > 1): ?>
+        <nav class="pagination" aria-label="Pagination" style="display: flex; justify-content: center; gap: 1rem; margin-top: 2rem;">
+            <?php if ($page > 1): ?>
+                <a href="index.php?page=<?= $page - 1 ?>" class="btn btn-secondary">&larr; Previous</a>
+            <?php endif; ?>
+
+            <span style="align-self: center;">Page <?= $page ?> of <?= $totalPages ?></span>
+
+            <?php if ($page < $totalPages): ?>
+                <a href="index.php?page=<?= $page + 1 ?>" class="btn btn-secondary">Next &rarr;</a>
+            <?php endif; ?>
+        </nav>
+    <?php endif; ?>
 <?php endif; ?>
 
 <?php
