@@ -12,6 +12,7 @@ $loadError = '';
 // Pagination settings
 $limit = 6;
 $page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1;
+$selectedCategoryId = filter_input(INPUT_GET, 'category', FILTER_VALIDATE_INT);
 if ($page < 1) $page = 1;
 $offset = ($page - 1) * $limit;
 
@@ -21,8 +22,19 @@ try {
         ->query('SELECT category_id, category_name FROM dbProj_categories ORDER BY category_name')
         ->fetchAll();
 
+    // Base query for counting and fetching
+    $whereClause = "WHERE r.status = 'published'";
+    $queryParams = [];
+
+    if ($selectedCategoryId) {
+        $whereClause .= " AND b.category_id = :category_id";
+        $queryParams[':category_id'] = $selectedCategoryId;
+    }
+
     // Get total count for pagination
-    $totalReviews = $pdo->query("SELECT COUNT(*) FROM dbProj_reviews WHERE status = 'published'")->fetchColumn();
+    $countStmt = $pdo->prepare("SELECT COUNT(*) FROM dbProj_reviews r INNER JOIN dbProj_books b ON r.book_id = b.book_id $whereClause");
+    $countStmt->execute($queryParams);
+    $totalReviews = $countStmt->fetchColumn();
     $totalPages = (int)ceil($totalReviews / $limit);
 
     $stmt = $pdo->prepare(
@@ -45,7 +57,7 @@ try {
         LEFT JOIN dbProj_categories c ON b.category_id = c.category_id
         INNER JOIN dbProj_users u ON r.user_id = u.user_id
         LEFT JOIN dbProj_ratings rt ON r.review_id = rt.review_id
-        WHERE r.status = 'published'
+        $whereClause
         GROUP BY
             r.review_id,
             r.review_title,
@@ -61,6 +73,10 @@ try {
         ORDER BY r.created_at DESC
         LIMIT :limit OFFSET :offset"
     );
+    
+    foreach ($queryParams as $key => $val) {
+        $stmt->bindValue($key, $val);
+    }
     $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
@@ -96,8 +112,13 @@ page_header('Home');
 
 <?php if ($categories !== []): ?>
     <nav class="category-nav" aria-label="Book categories">
+        <a href="index.php" class="<?= !$selectedCategoryId ? 'active' : '' ?>" style="<?= !$selectedCategoryId ? 'background: var(--accent); color: #fff;' : '' ?>">
+            All
+        </a>
         <?php foreach ($categories as $category): ?>
-            <a href="search.php?category=<?= e((string) $category['category_id']) ?>">
+            <a href="index.php?category=<?= e((string) $category['category_id']) ?>" 
+               class="<?= $selectedCategoryId === (int)$category['category_id'] ? 'active' : '' ?>"
+               style="<?= $selectedCategoryId === (int)$category['category_id'] ? 'background: var(--accent); color: #fff;' : '' ?>">
                 <?= e($category['category_name']) ?>
             </a>
         <?php endforeach; ?>
@@ -153,14 +174,17 @@ page_header('Home');
 
     <?php if ($totalPages > 1): ?>
         <nav class="pagination" aria-label="Pagination" style="display: flex; justify-content: center; gap: 1rem; margin-top: 2rem;">
+            <?php 
+                $baseUrl = "index.php?" . ($selectedCategoryId ? "category=$selectedCategoryId&" : "");
+            ?>
             <?php if ($page > 1): ?>
-                <a href="index.php?page=<?= $page - 1 ?>" class="btn btn-secondary">&larr; Previous</a>
+                <a href="<?= $baseUrl ?>page=<?= $page - 1 ?>" class="btn btn-secondary">&larr; Previous</a>
             <?php endif; ?>
 
             <span style="align-self: center;">Page <?= $page ?> of <?= $totalPages ?></span>
 
             <?php if ($page < $totalPages): ?>
-                <a href="index.php?page=<?= $page + 1 ?>" class="btn btn-secondary">Next &rarr;</a>
+                <a href="<?= $baseUrl ?>page=<?= $page + 1 ?>" class="btn btn-secondary">Next &rarr;</a>
             <?php endif; ?>
         </nav>
     <?php endif; ?>
