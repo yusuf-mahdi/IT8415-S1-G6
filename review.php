@@ -71,6 +71,70 @@ if ($reviewId === false || $reviewId === null) {
             $loadError = 'Published review was not found.';
             $review = null;
         } else {
+            $currentUser = current_user();
+            $userRating = null;
+
+            // Check if current user has already rated
+            if ($currentUser !== null) {
+                $ratingCheckStmt = db()->prepare(
+                    "SELECT rating FROM dbProj_ratings WHERE review_id = :review_id AND user_id = :user_id"
+                );
+                $ratingCheckStmt->execute([
+                    ':review_id' => $reviewId,
+                    ':user_id' => $currentUser['id']
+                ]);
+                $userRating = $ratingCheckStmt->fetchColumn();
+            }
+
+            // Handle Form Submissions (Rating and Comments)
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && $currentUser !== null) {
+                if (isset($_POST['action'])) {
+                    if ($_POST['action'] === 'rate' && isset($_POST['rating'])) {
+                        $ratingValue = (int)$_POST['rating'];
+                        if ($ratingValue >= 1 && $ratingValue <= 5) {
+                            try {
+                                $rateStmt = db()->prepare(
+                                    "INSERT INTO dbProj_ratings (review_id, user_id, rating) 
+                                     VALUES (:review_id, :user_id, :rating)
+                                     ON DUPLICATE KEY UPDATE rating = :rating"
+                                );
+                                $rateStmt->execute([
+                                    ':review_id' => $reviewId,
+                                    ':user_id' => $currentUser['id'],
+                                    ':rating' => $ratingValue
+                                ]);
+                                // Refresh user rating
+                                $userRating = $ratingValue;
+                                // Refresh average rating (optional, or just redirect)
+                                header("Location: review.php?id=$reviewId&rated=1");
+                                exit;
+                            } catch (PDOException $e) {
+                                $loadError = 'Could not save rating.';
+                            }
+                        }
+                    } elseif ($_POST['action'] === 'comment' && isset($_POST['comment_text'])) {
+                        $commentText = trim($_POST['comment_text']);
+                        if ($commentText !== '') {
+                            try {
+                                $commentInsertStmt = db()->prepare(
+                                    "INSERT INTO dbProj_comments (review_id, user_id, comment_text) 
+                                     VALUES (:review_id, :user_id, :comment_text)"
+                                );
+                                $commentInsertStmt->execute([
+                                    ':review_id' => $reviewId,
+                                    ':user_id' => $currentUser['id'],
+                                    ':comment_text' => $commentText
+                                ]);
+                                header("Location: review.php?id=$reviewId&commented=1");
+                                exit;
+                            } catch (PDOException $e) {
+                                $loadError = 'Could not save comment.';
+                            }
+                        }
+                    }
+                }
+            }
+
             $commentStmt = db()->prepare(
                 "SELECT
                     cm.comment_text,
@@ -124,6 +188,26 @@ page_header($review !== null ? (string) $review['review_title'] : 'Review');
                         rating<?= (int) $review['rating_count'] === 1 ? '' : 's' ?>
                     </span>
                 </div>
+
+                <?php if (is_logged_in()): ?>
+                    <div class="rating-section" style="margin-top: 1rem;">
+                        <form method="POST" class="rating-form">
+                            <input type="hidden" name="action" value="rate">
+                            <label for="rating">Your Rating:</label>
+                            <select name="rating" id="rating" onchange="this.form.submit()">
+                                <option value="">Select...</option>
+                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                    <option value="<?= $i ?>" <?= (int)$userRating === $i ? 'selected' : '' ?>><?= $i ?> Stars</option>
+                                <?php endfor; ?>
+                            </select>
+                            <?php if ($userRating): ?>
+                                <span class="muted-text">(You rated this <?= $userRating ?> stars)</span>
+                            <?php endif; ?>
+                        </form>
+                    </div>
+                <?php else: ?>
+                    <p style="margin-top: 1rem;"><a href="login.php">Log in</a> to rate and comment.</p>
+                <?php endif; ?>
             </div>
 
             <?php if ($cover !== ''): ?>
@@ -148,7 +232,7 @@ page_header($review !== null ? (string) $review['review_title'] : 'Review');
                 <h2>Media</h2>
                 <?php $extension = file_extension((string) $review['media_file']); ?>
                 <?php if (in_array($extension, ['mp4', 'webm'], true)): ?>
-                    <video controls src="<?= e($review['media_file']) ?>"></video>
+                    <video controls src="<?= e($review['media_file']) ?>" style="max-width: 100%;"></video>
                 <?php else: ?>
                     <audio controls src="<?= e($review['media_file']) ?>"></audio>
                 <?php endif; ?>
@@ -165,15 +249,27 @@ page_header($review !== null ? (string) $review['review_title'] : 'Review');
 
     <section class="content-panel" aria-labelledby="comments-title">
         <h2 id="comments-title">Comments</h2>
+
+        <?php if (is_logged_in()): ?>
+            <form method="POST" class="comment-form" style="margin-bottom: 2rem;">
+                <input type="hidden" name="action" value="comment">
+                <div class="form-group">
+                    <label for="comment_text">Add a comment:</label>
+                    <textarea name="comment_text" id="comment_text" rows="3" required style="width: 100%; margin-bottom: 0.5rem;"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Post Comment</button>
+            </form>
+        <?php endif; ?>
+
         <?php if ($comments === []): ?>
             <p class="muted-text">No comments yet.</p>
         <?php else: ?>
             <div class="comment-list">
                 <?php foreach ($comments as $comment): ?>
-                    <article class="comment-item">
-                        <h3><?= e($comment['username']) ?></h3>
-                        <p><?= e($comment['comment_text']) ?></p>
-                        <p class="muted-text"><?= e(date('M j, Y', strtotime((string) $comment['created_at']))) ?></p>
+                    <article class="comment-item" style="border-bottom: 1px solid #eee; padding: 1rem 0;">
+                        <h3 style="margin: 0; font-size: 1.1em;"><?= e($comment['username']) ?></h3>
+                        <p style="margin: 0.5rem 0;"><?= e($comment['comment_text']) ?></p>
+                        <p class="muted-text" style="font-size: 0.85em;"><?= e(date('M j, Y', strtotime((string) $comment['created_at']))) ?></p>
                     </article>
                 <?php endforeach; ?>
             </div>
