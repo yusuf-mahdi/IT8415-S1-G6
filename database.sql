@@ -4,9 +4,6 @@
 -- Prefix: dbProj_
 -- ============================================
 
-CREATE DATABASE IF NOT EXISTS dbProj_BookReview;
-USE dbProj_BookReview;
-
 -- ============================================
 -- TABLE 1: Users (3 roles: admin, creator, viewer)
 -- ============================================
